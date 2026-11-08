@@ -6,20 +6,29 @@ Built as a web development practical (PHP, MySQLi, Bootstrap 5).
 
 ## Features
 
-**Customers and guests**
+**Guests**
 - Browse the menu with prices, average ratings and product images
-- Order as a guest (name only) or as a registered member, who gets a discount
+- Order as a guest (name only)
 - Live order total and a confirmation prompt before an order is sent
+
+**Patrons**
+- Everything a guest can do
+- Discount on ordering
 - Order history with a status badge for each order
 - Rate each product of a finished order with a 1-5 cup rating (can be changed later)
 
 **Staff**
-- Order queue with status, customer type (guest / member / staff) and the staff member in charge
+- Everything a patron can do
+- Bigger discount on ordering
+- Access the user database, create a user (patron role only)
+- Access the order queue for all the un-assigned orders  and self-assigned orders, showing the customer type (guest/patron/staff) and the status
 - Bulk actions: **Take order** (assigns it to you and sets it to active), **Complete order**, **Archive order**
 
 **Admins**
-- Everything staff can do, plus deleting orders
+- Everything staff can do, except place an order (thus no discount)
 - Add, edit and delete products
+- Access the user database and create/edit/delete a user (any role)
+- Access the order queue for all the orders without any restriction, showing the customer type (guest/patron/staff) and the status
 - **Sales stats dashboard** (`stats.php`): date and status filters, KPI cards, charts (revenue over time, orders by status, top products, guest vs member vs staff, average rating) and a paginated orders table
 - **Excel export** (.xlsx) with three sheets: orders, order lines, summary
 - **Command-line API** with bearer tokens (see [API](#api))
@@ -28,7 +37,7 @@ Built as a web development practical (PHP, MySQLi, Bootstrap 5).
 
 ```
 pending  ->  active  ->  done  ->  archived
- (new)       (taken)    (completed)
+(new)        (taken)     (completed)
 ```
 
 - Taking an order assigns the staff member and cannot be done twice for the same order.
@@ -56,7 +65,7 @@ pending  ->  active  ->  done  ->  archived
    composer install
    ```
 
-3. **Create the database** and import the schema (`database/schema.sql`), or create the tables listed under [Database](#database).
+3. **Create the database** and import the schema (`database/db_cafe.sql`).
 
 4. **Configure the connection** by editing the database credentials in `config.php`.
 
