@@ -1,0 +1,8 @@
+# Block browser access to Composer files and dependencies
+<FilesMatch "^(composer\.(json|lock)|\.git.*)$">
+    Require all denied
+</FilesMatch>
+
+RedirectMatch 404 /vendor/
+
+SetEnvIfNoCase Authorization "(.+)" HTTP_AUTHORIZATION=$1
