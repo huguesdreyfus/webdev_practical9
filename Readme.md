@@ -65,7 +65,7 @@ pending  ->  active  ->  done  ->  archived
    composer install
    ```
 
-3. **Create the database** and import `database/schema.sql` (commands under [Database](#database)).
+3. **Create the database** and import `db_cafe.sql` (commands under [Database](#database)).
 
 4. **Configure the connection** by editing the database credentials in `config.php`.
 
@@ -75,11 +75,11 @@ pending  ->  active  ->  done  ->  archived
 
 ## Database
 
-The full structure is in `database/schema.sql` (a structure-only MariaDB 10.11 dump of the `db_cafe` database, without data). Create the database and import it:
+The full structure is in `db_cafe.sql` (a structure-only MariaDB 10.11 dump of the `db_cafe` database, without data). Create the database and import it:
 
 ```bash
 mysql -u root -p -e "CREATE DATABASE db_cafe CHARACTER SET utf8mb4"
-mysql -u root -p db_cafe < database/schema.sql
+mysql -u root -p db_cafe < db_cafe.sql
 ```
 
 | Table | Purpose | Key columns |
