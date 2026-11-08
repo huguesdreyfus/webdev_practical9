@@ -1,8 +1,8 @@
 <?php
     // config.php
     $host = "localhost";
-    $user = "phpadmin";
-    $pass = "pleaseletmeconnect";
+    $user = "yourusername";
+    $pass = "";
     $db   = "db_cafe"; 
     
     $conn = mysqli_connect($host, $user, $pass, $db); 
