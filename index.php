@@ -73,96 +73,120 @@
                     </form>
                 <?php endif; ?>
 
-                <div class="table-responsive"> 
-                    <table class="table table-bordered table-striped table-hover align-middle"> 
-                        <thead class="table-dark"> 
-                            <tr> 
-                                <th class="text-center">No.</th>  
-                                <th class="text-center">Image</th> 
+                <?php
+                    // Group the products by category: $byCategory['snack'] = [row, row, ...]
+                    // The query's ORDER BY category sorts by the enum order (coffee drink, non-coffee drink, snack).
+                    $categoryLabels = [
+                        'coffee drink'     => 'Coffee drinks',
+                        'non-coffee drink' => 'Non-coffee drinks',
+                        'snack'            => 'Snacks',
+                    ];
+                    $byCategory = [];
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $byCategory[$row['category']][] = $row;
+                    }
+                ?>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center">No.</th>
+                                <th class="text-center">Image</th>
                                 <th>Name</th>
                                 <th>Ratings</th>
                                 <th>Price</th>
-                                <th class="text-center"><?= is_admin() ? 'Actions' : 'Quantity' ?></th> 
-                            </tr> 
-                        </thead> 
+                                <th class="text-center"><?= is_admin() ? 'Actions' : 'Quantity' ?></th>
+                            </tr>
+                        </thead>
 
-                        <tbody> 
-                            <?php $no = 1; while ($row = mysqli_fetch_assoc($result)): ?>
-                                <?php
-                                    $base  = (int) $row['price'] * 1000;           // regular price in IDR
-                                    $final = final_price_idr($row['price']);       // price for this visitor
-                                ?>
-                                <tr>
-                                    <td class="text-center"><?= $no++ ?></td>
+                        <?php if (!$byCategory): ?>
+                            <tbody>
+                                <tr><td colspan="6" class="text-center text-muted py-4">No products yet.</td></tr>
+                            </tbody>
+                        <?php endif; ?>
 
-                                    <td class="text-center">
-                                        <?php if (!empty($row['image_link'])): ?>
-                                            <img src="<?= htmlspecialchars($row['image_link']) ?>" width="100" class="img-fluid" alt="<?= htmlspecialchars($row['name']) ?>">
-                                        <?php else: ?>
-                                            <span class="text-muted">(•⩊•)</span>
-                                        <?php endif; ?>
-                                    </td>
-
-                                    <td><?= htmlspecialchars($row['name']) ?></td>
-
-                                    <td>
-                                        <?php $rt = $ratings[(int) $row['id']] ?? null; ?>
-                                        <?php if ($rt): ?>
-                                            <?php $pct = max(0, min(100, $rt['avg'] / 5 * 100)); ?>
-                                            <span class="cup-rating" role="img"
-                                                aria-label="Rated <?= $rt['avg'] ?> out of 5"
-                                                title="<?= $rt['avg'] ?> / 5">
-                                                <span class="cups-base">
-                                                    <?php for ($i = 0; $i < 5; $i++): ?>
-                                                        <i class="bi bi-cup-hot-fill"></i>
-                                                    <?php endfor; ?>
-                                                </span>
-                                                <span class="cups-fill" style="width: <?= $pct ?>%">
-                                                    <?php for ($i = 0; $i < 5; $i++): ?>
-                                                        <i class="bi bi-cup-hot-fill"></i>
-                                                    <?php endfor; ?>
-                                                </span>
-                                            </span>
-                                            <small class="text-muted"><?= $rt['avg'] ?> (<?= $rt['count'] ?>)</small>
-                                        <?php else: ?>
-                                            <span class="text-muted">No ratings yet</span>
-                                        <?php endif; ?>
-                                    </td>
-
-                                    <td>
-                                        <?php if ($final < $base): ?>
-                                            <s>IDR <?= number_format($base) ?></s><br/>
-                                            IDR <?= number_format($final) ?>
-                                        <?php else: ?>
-                                            IDR <?= number_format($base) ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    
-                                    <td class="text-center">
-                                        <?php if (is_admin()): ?>
-                                            <a href="edit.php?id=<?= (int) $row['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
-                                            <form method="POST" action="delete.php" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this product?')">
-                                                <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
-                                                <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
-                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                            </form>
-                                        
-                                        <?php else: ?>
-                                            <input
-                                                type="number"
-                                                class="form-control order-quantity"
-                                                id="order_<?= $row['id'] ?>"
-                                                name="order[<?= $row['id'] ?>]"
-                                                form="orderForm"
-                                                value="0" min="0" max="99" step="1"
-                                                data-name="<?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?>"
-                                                data-price="<?= $final ?>">
-                                        <?php endif; ?>
-                                    </td>
+                        <?php foreach ($byCategory as $category => $products): ?>
+                            <tbody>
+                                <tr class="table-secondary">
+                                    <th colspan="6" id="cat-<?= htmlspecialchars(preg_replace('/[^a-z0-9]+/', '-', $category)) ?>">
+                                        <?= htmlspecialchars($categoryLabels[$category] ?? ucfirst($category)) ?>
+                                        <span class="badge bg-secondary ms-1"><?= count($products) ?></span>
+                                    </th>
                                 </tr>
-                            <?php endwhile; ?>
-                        </tbody> 
-                    </table> 
+
+                                <?php $no = 1; foreach ($products as $row): ?>
+                                    <?php
+                                        $base  = (int) $row['price'] * 1000;           // regular price in IDR
+                                        $final = final_price_idr($row['price']);       // price for this visitor
+                                    ?>
+                                    <tr>
+                                        <td class="text-center"><?= $no++ ?></td>
+
+                                        <td class="text-center">
+                                            <?php if (!empty($row['image_link'])): ?>
+                                                <img src="<?= htmlspecialchars($row['image_link']) ?>" width="100" class="img-fluid" alt="<?= htmlspecialchars($row['name']) ?>">
+                                            <?php else: ?>
+                                                <span class="text-muted">(•⩊•)</span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td><?= htmlspecialchars($row['name']) ?></td>
+
+                                        <td>
+                                            <?php $rt = $ratings[(int) $row['id']] ?? null; ?>
+                                            <?php if ($rt): ?>
+                                                <?php $pct = max(0, min(100, $rt['avg'] / 5 * 100)); ?>
+                                                <span class="cup-rating" role="img"
+                                                    aria-label="Rated <?= $rt['avg'] ?> out of 5"
+                                                    title="<?= $rt['avg'] ?> / 5">
+                                                    <span class="cups-base">
+                                                        <?php for ($i = 0; $i < 5; $i++): ?><i class="bi bi-cup-hot-fill"></i><?php endfor; ?>
+                                                    </span>
+                                                    <span class="cups-fill" style="width: <?= $pct ?>%">
+                                                        <?php for ($i = 0; $i < 5; $i++): ?><i class="bi bi-cup-hot-fill"></i><?php endfor; ?>
+                                                    </span>
+                                                </span>
+                                                <small class="text-muted"><?= $rt['avg'] ?> (<?= $rt['count'] ?>)</small>
+                                            <?php else: ?>
+                                                <span class="text-muted">No ratings yet</span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td>
+                                            <?php if ($final < $base): ?>
+                                                <s>IDR <?= number_format($base) ?></s><br/>
+                                                IDR <?= number_format($final) ?>
+                                            <?php else: ?>
+                                                IDR <?= number_format($base) ?>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td class="text-center">
+                                            <?php if (is_admin()): ?>
+                                                <a href="edit.php?id=<?= (int) $row['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                                                <form method="POST" action="delete.php" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this product?')">
+                                                    <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
+                                                    <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
+                                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                </form>
+                                            <?php else: ?>
+                                                <input
+                                                    type="number"
+                                                    class="form-control order-quantity"
+                                                    id="order_<?= (int) $row['id'] ?>"
+                                                    name="order[<?= (int) $row['id'] ?>]"
+                                                    form="orderForm"
+                                                    value="0" min="0" max="99" step="1"
+                                                    data-name="<?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?>"
+                                                    data-price="<?= $final ?>">
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        <?php endforeach; ?>
+                    </table>
                 </div> 
 
                 <?php if (!is_admin()): ?>
