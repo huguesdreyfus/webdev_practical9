@@ -69,7 +69,7 @@ pending  ->  active  ->  done  ->  archived
 
 4. **Configure the connection** by editing the database credentials in `config.php`.
 
-5. **Serve the folder with Apache**, for example by placing it in `/var/www/html/` and opening `http://localhost/webdev_practical9/`.
+5. **Serve the folder with Apache**, for example by placing it in `/var/www/html/` and opening `http://localhost/webdev_practical9/` (for Linux).
 
 6. **Create an admin account.** Register a user through `register.php`, then set its `role` to `admin` in the `users` table. New accounts start as `patron`; the role names are defined in `roles.php`.
 
@@ -101,15 +101,7 @@ mysql -u root -p db_cafe < db_cafe.sql
 
 The API lets an admin download the stats from a terminal. Only a hash of each token is stored in the database.
 
-### 1. Allow the Authorization header (Apache)
-
-Make sure this line is in `.htaccess`, otherwise Apache may strip the header:
-
-```apache
-SetEnvIfNoCase Authorization "(.+)" HTTP_AUTHORIZATION=$1
-```
-
-### 2. Create a token (on the server)
+### 1. Create a token (on the server)
 
 ```bash
 php api_token.php create <admin_username> "my laptop" 90   # 90 days; 0 = never expires
@@ -119,7 +111,7 @@ php api_token.php revoke <token_id>
 
 The token is printed once and cannot be shown again.
 
-### 3. Call it
+### 2. Call it
 
 ```bash
 export UWU_TOKEN='uwu_...'
